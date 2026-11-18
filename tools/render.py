@@ -6,13 +6,19 @@ randomness (star positions are a fixed list), so re-runs are byte-identical.
 
 Layout (1024x1024):
   masthead 0-116 | hero 124-476 | grid 2x2 488-864 | strip 876-1012
-Word budget: 59 words total (R2, counted in BUILD-R2.md).
-R2 changes: typo-proof Nvidia sub, redrawn Quad flags, (17 NOV) date
-labels on Kerch + Dhoni, "to evacuate" wording, lowered Nvidia chip,
-military delta-wing hero drone + radar array + PERSIAN GULF label,
-Trump bust, Kerch smoke plume, two-line strip (no 3rd item: the only
-new development, Nvidia after-hours rise, is magnitude-disputed
-1.7-5% across sources and duplicates the Nvidia panel).
+Word budget: 62 words total (R3, counted in BUILD-R3.md).
+R3 changes (from JUDGE-R2.md, all cheap, no redesign): masthead
+title "THE WORLD IN ONE DAY" restored (+5 words, paid by dropping
+"Meets" from the Trump sub and "Huang not back" -> "Huang out");
+hero drone blunt nose + front canards; radar panel near-vertical
+with a rotating-base disc; minimal face on the Trump bust;
+interceptor given a big orange flame + yellow core and shifted
+~15px clear of the ship's mast; "hits Fri." -> "lands Fri."
+(trailing period dropped: 491px at 28px vs 486px panel, 480px
+without it — font floor is 28px, so the period is the price);
+Kerch smoke as a rising column of elongated puffs; PERSIAN GULF
+label 28px + dark outline, waves shifted right so they never
+cross it.
 """
 import math
 import os
@@ -101,47 +107,68 @@ def draw_hero(d, x0, y0, x1, y1):
            fill=(200, 200, 200), width=3)
     d.ellipse([x0 + 175, sea_y - 20, x0 + 185, sea_y - 10],
               fill=(255, 60, 60))
-    # waves (start right of the Gulf label so they never cross it)
-    for wx in range(x0 + 480, x1 - 20, 90):
+    # waves (start right of the Gulf label so they never cross it;
+    # R3: label grew to 28px, so waves start further right)
+    for wx in range(x0 + 540, x1 - 20, 90):
         d.arc([wx, sea_y + 12, wx + 70, sea_y + 34], 180, 360,
               fill=(120, 170, 220), width=4)
     # sea label, map-style, in the water right of the headland
-    d.text((x0 + 265, sea_y + 14), "PERSIAN GULF", font=font(SANS_B, 24),
-           fill=(150, 190, 230))
-    # --- radar array, left: mast + tilted flat phased-array panel ---
+    # (R3: 24 -> 28px + dark outline so it survives the 300px
+    # downscale, where it was only faint in R2)
+    d.text((x0 + 265, sea_y + 14), "PERSIAN GULF", font=font(SANS_B, 28),
+           fill=(150, 190, 230), stroke_width=2, stroke_fill=(8, 28, 58))
+    # --- radar array, left: mast + turntable disc + near-vertical
+    # phased-array panel (R3: panel upright so it reads as radar,
+    # not a solar panel/billboard; the rotating base makes the
+    # radar reading explicit) ---
     bx, by = x0 + 110, sea_y + 16         # mast base, on the headland
-    d.line([(bx, by), (bx, by - 70)], fill=(200, 200, 200), width=7)
+    d.line([(bx, by), (bx, by - 58)], fill=(200, 200, 200), width=7)
     d.line([(bx - 26, by), (bx + 26, by)], fill=(200, 200, 200), width=6)
-    # tilted rectangular panel (parallelogram), with grid lines
-    d.polygon([(bx - 34, by - 88), (bx + 30, by - 108), (bx + 42, by - 78),
-               (bx - 22, by - 58)], fill=(225, 225, 225),
+    # rotating base: flat turntable disc the panel sits on
+    d.ellipse([bx - 20, by - 66, bx + 20, by - 54], fill=(160, 160, 160),
               outline=(90, 90, 90))
-    d.line([(bx - 28, by - 73), (bx + 36, by - 93)], fill=(150, 150, 150),
+    d.line([(bx, by - 54), (bx, by - 64)], fill=(200, 200, 200), width=5)
+    # near-vertical rectangular panel (slight tilt only), with grid lines
+    d.polygon([(bx - 30, by - 104), (bx + 22, by - 110), (bx + 28, by - 68),
+               (bx - 24, by - 62)], fill=(225, 225, 225),
+              outline=(90, 90, 90))
+    d.line([(bx - 28, by - 86), (bx + 25, by - 90)], fill=(150, 150, 150),
            width=2)
-    d.line([(bx - 16, by - 88), (bx - 4, by - 68)], fill=(150, 150, 150),
+    d.line([(bx - 4, by - 103), (bx + 2, by - 65)], fill=(150, 150, 150),
            width=2)
     # thin sweep line up-right (no big wedge: R1 beam dominated)
-    d.line([(bx + 30, by - 108), (bx + 150, by - 180)],
+    d.line([(bx + 22, by - 110), (bx + 150, by - 182)],
            fill=(240, 220, 120), width=3)
-    d.ellipse([bx + 146, by - 184, bx + 154, by - 176],
+    d.ellipse([bx + 146, by - 186, bx + 154, by - 178],
               fill=(240, 220, 120))
     # --- military delta-wing drone (Shahed-style flying wing), centre ---
-    # No rotors, no nav lights: a flat dark triangle, nose right,
-    # with a rear pusher prop and a small tail fin.
+    # No rotors, no nav lights: a flat dark flying wing with a BLUNT
+    # nose (R3: the sharp point read as a stealth jet / paper plane)
+    # and small front canards, plus a rear pusher prop and tail fin.
     cx, cy = 500, 222
-    d.polygon([(cx + 120, cy), (cx - 80, cy - 44), (cx - 62, cy),
-               (cx - 80, cy + 44)], fill=(45, 45, 45),
+    d.polygon([(cx + 106, cy - 9), (cx + 106, cy + 9), (cx - 80, cy + 44),
+               (cx - 62, cy), (cx - 80, cy - 44)], fill=(45, 45, 45),
               outline=(220, 220, 220))
-    d.line([(cx + 120, cy), (cx - 62, cy)], fill=(140, 140, 140), width=3)
+    d.line([(cx + 106, cy), (cx - 62, cy)], fill=(140, 140, 140), width=3)
+    # small canards fore of the wing, above and below the fuselage line
+    d.polygon([(cx + 56, cy - 4), (cx + 80, cy - 24), (cx + 88, cy - 4)],
+              fill=(60, 60, 60), outline=(200, 200, 200))
+    d.polygon([(cx + 56, cy + 4), (cx + 80, cy + 24), (cx + 88, cy + 4)],
+              fill=(60, 60, 60), outline=(200, 200, 200))
     d.polygon([(cx - 62, cy - 6), (cx - 40, cy - 30), (cx - 30, cy - 6)],
               fill=(60, 60, 60), outline=(200, 200, 200))
     d.ellipse([cx - 30, cy - 10, cx + 10, cy + 10], fill=(90, 90, 90),
               outline=(220, 220, 220))
-    # interceptor missile climbing at the drone from below right:
-    # white body streak, orange flame at the rear (away from the drone)
-    d.line([(cx + 92, cy + 28), (cx + 162, cy + 78)], fill=WHITE, width=5)
-    d.ellipse([cx + 84, cy + 20, cx + 100, cy + 36], fill=WHITE)
-    d.ellipse([cx + 156, cy + 72, cx + 172, cy + 88], fill=(255, 110, 0))
+    # interceptor missile climbing at the drone from the warship
+    # below: white body streak, BIG orange flame + yellow core at
+    # the rear (R3: the old small flame read as an antenna; the
+    # whole missile is shifted ~15px left of the ship's mast so it
+    # no longer merges with it)
+    d.line([(cx + 76, cy + 26), (cx + 140, cy + 70)], fill=WHITE, width=6)
+    d.ellipse([cx + 68, cy + 18, cx + 84, cy + 34], fill=WHITE)
+    d.ellipse([cx + 134, cy + 64, cx + 158, cy + 88], fill=(255, 110, 0))
+    d.ellipse([cx + 140, cy + 70, cx + 152, cy + 82], fill=(255, 190, 40))
+    d.ellipse([cx + 152, cy + 80, cx + 164, cy + 92], fill=(120, 120, 120))
     # --- explosion burst, right: irregular fireball, no sun-like rays ---
     ex, ey = 880, 240
     d.ellipse([ex - 58, ey - 30, ex + 30, ey + 58], fill=(220, 40, 0))
@@ -155,12 +182,12 @@ def draw_hero(d, x0, y0, x1, y1):
     for sx, sy, sr in [(ex - 46, ey - 82, 22), (ex - 8, ey - 100, 26),
                        (ex + 34, ey - 84, 20)]:
         d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=(110, 110, 110))
-    # small second drone, top right: same delta-wing shape, smaller,
-    # with a short white contrail behind it
+    # small second drone, top right: same delta-wing shape (blunt
+    # nose, R3), smaller, with a short white contrail behind it
     sx, sy = 760, 165
     d.line([(sx - 78, sy + 12), (sx - 42, sy + 4)], fill=WHITE, width=3)
-    d.polygon([(sx + 42, sy), (sx - 28, sy - 16), (sx - 22, sy),
-               (sx - 28, sy + 16)], fill=(45, 45, 45),
+    d.polygon([(sx + 34, sy - 5), (sx + 34, sy + 5), (sx - 28, sy + 16),
+               (sx - 22, sy), (sx - 28, sy - 16)], fill=(45, 45, 45),
               outline=(220, 220, 220))
     d.ellipse([sx - 34, sy - 4, sx - 24, sy + 4], fill=(170, 170, 170))
     # --- warship silhouette on the sea ---
@@ -211,14 +238,18 @@ def draw_kerch(d, x0, y0, x1, y1):
     for sx in (mid - 52, mid - 12, mid + 28):
         d.arc([sx, sea_y - 14, sx + 36, sea_y + 10], 180, 360,
               fill=WHITE, width=5)
-    # smoke plume over the gap: irregular rising puffs, dark at the
-    # base where it leaves the fallen deck (R1's single grey ball
-    # read as a moon). Clearly anchored to the wreck, not a disc.
-    for sx, sy, sr, col in [(mid - 14, deck_y - 4, 16, (70, 70, 70)),
-                            (mid + 8, deck_y - 12, 18, (90, 90, 90)),
-                            (mid - 6, deck_y - 26, 15, (110, 110, 110)),
-                            (mid + 16, deck_y - 28, 11, (130, 130, 130))]:
-        d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=col)
+    # smoke plume over the gap: a rising, slightly leaning column
+    # of elongated puffs (taller than wide, R3: R2's four round
+    # balls still read as balloons), dark at the base where it
+    # leaves the fallen deck, paler as it rises. Clearly anchored
+    # to the wreck, not a disc.
+    for sx, sy, rx, ry, col in [
+            (mid - 14, deck_y - 2, 13, 17, (70, 70, 70)),
+            (mid + 8, deck_y - 10, 14, 19, (90, 90, 90)),
+            (mid - 4, deck_y - 24, 11, 17, (110, 110, 110)),
+            (mid + 12, deck_y - 33, 9, 14, (130, 130, 130)),
+            (mid - 1, deck_y - 38, 7, 10, (150, 150, 150))]:
+        d.ellipse([sx - rx, sy - ry, sx + rx, sy + ry], fill=col)
 
 
 def draw_trump(d, x0, y0, x1, y1):
@@ -242,6 +273,14 @@ def draw_trump(d, x0, y0, x1, y1):
                fill=(240, 210, 90))
     d.polygon([(fx - 15, y0 + 22), (fx + 15, y0 + 22), (fx + 13, y0 + 12),
                (fx - 13, y0 + 12)], fill=(240, 210, 90))
+    # minimal face (R3: R2's blank skin block read as a mannequin):
+    # two eyes, a short nose line, a mouth line — no detailed
+    # portrait, just enough to read as a human face at 1024px
+    d.ellipse([fx - 8, y0 + 25, fx - 4, y0 + 29], fill=(60, 40, 30))
+    d.ellipse([fx + 4, y0 + 25, fx + 8, y0 + 29], fill=(60, 40, 30))
+    d.line([(fx, y0 + 27), (fx - 1, y0 + 31)], fill=(160, 120, 90), width=2)
+    d.line([(fx - 4, y0 + 33), (fx + 4, y0 + 33)], fill=(120, 60, 50),
+           width=2)
     # --- plane: smaller, top-right ---
     cx = x0 + 300
     py = y0 + 22
@@ -356,10 +395,19 @@ def main():
     img = Image.new("RGB", (W, H), CREAM)
     d = ImageDraw.Draw(img)
 
-    # ---- masthead: date only (R2: the "THE WORLD IN ONE DAY" title
-    # was dropped to pay for the two (17 NOV) date labels + the
-    # PERSIAN GULF map label inside the ~60-word budget) ----
-    centre(d, W // 2, 34, "WEDNESDAY 18 NOVEMBER 2026",
+    # ---- masthead: nameplate title restored (R3: R2 dropped it to
+    # pay the word budget and left empty cream above the date) + date
+    # Title is flanked by thin rules, newspaper-nameplate style.
+    # Word budget: +5 words for the title, paid by dropping "Meets"
+    # from the Trump sub and shortening "Huang not back" to "Huang
+    # out" (see panels below) — total stays at 62 words. ----
+    title = "THE WORLD IN ONE DAY"
+    tf = font(SANS_B, 24)
+    tw = text_w(tf, title)
+    centre(d, W // 2, 6, title, tf, INK)
+    d.line([(16, 18), (W // 2 - tw // 2 - 20, 18)], fill=INK, width=2)
+    d.line([(W // 2 + tw // 2 + 20, 18), (W - 16, 18)], fill=INK, width=2)
+    centre(d, W // 2, 36, "WEDNESDAY 18 NOVEMBER 2026",
            font(SERIF_B, 50), INK)
     d.rectangle([16, 106, W - 16, 112], fill=RED)
 
@@ -377,11 +425,11 @@ def main():
     panel(d, 16, 488, 502, 672, (214, 228, 240), draw_kerch,
           "KERCH DOWN (17 NOV)", "Ukraine strike; 270m falls.")
     panel(d, 522, 488, 1008, 672, (232, 238, 245), draw_trump,
-          "TRUMP IN MANILA", "Meets Marcos; Xi\u2013Putin Thu.")
+          "TRUMP IN MANILA", "Marcos; Xi\u2013Putin Thu.")
     panel(d, 16, 680, 502, 864, (222, 243, 214), draw_nvidia,
-          "NVIDIA: REVENUE $115.8BN", "Up 103%; Huang not back.")
+          "NVIDIA: REVENUE $115.8BN", "Up 103%; Huang out.")
     panel(d, 522, 680, 1008, 864, (198, 224, 245), draw_akvan,
-          "AKVAN NEARS INDIA", "204,070 to evacuate; hits Fri.")
+          "AKVAN NEARS INDIA", "204,070 to evacuate; lands Fri")
 
     # ---- strip ALSO TODAY: two full-size lines (28px) instead of
     # one cramped line — fills the dead black space R1 left below
