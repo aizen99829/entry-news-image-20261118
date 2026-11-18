@@ -6,7 +6,13 @@ randomness (star positions are a fixed list), so re-runs are byte-identical.
 
 Layout (1024x1024):
   masthead 0-116 | hero 124-476 | grid 2x2 488-864 | strip 876-1012
-Word budget: 59 words total (counted in BUILD-R1.md).
+Word budget: 59 words total (R2, counted in BUILD-R2.md).
+R2 changes: typo-proof Nvidia sub, redrawn Quad flags, (17 NOV) date
+labels on Kerch + Dhoni, "to evacuate" wording, lowered Nvidia chip,
+military delta-wing hero drone + radar array + PERSIAN GULF label,
+Trump bust, Kerch smoke plume, two-line strip (no 3rd item: the only
+new development, Nvidia after-hours rise, is magnitude-disputed
+1.7-5% across sources and duplicates the Nvidia panel).
 """
 import math
 import os
@@ -69,8 +75,9 @@ def spiral_points(cx, cy, turns, r_max, steps=220):
 
 
 def draw_hero(d, x0, y0, x1, y1):
-    """Night sky over the Gulf: radar left, big delta drone centre,
-    orange explosion right, warship on the sea below."""
+    """Night sky over the Gulf: radar array + headland left, big
+    delta-wing drone centre, orange explosion right, warship on the
+    sea below, PERSIAN GULF sea label."""
     # sky gradient (fixed bands, deterministic)
     for i in range(y1 - y0):
         t = i / max(1, (y1 - y0))
@@ -85,51 +92,56 @@ def draw_hero(d, x0, y0, x1, y1):
         d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=WHITE)
     sea_y = y1 - 52
     d.rectangle([x0, sea_y, x1, y1], fill=SEA)
-    # waves
-    for wx in range(x0 + 20, x1 - 20, 90):
+    # --- coastline headland + airbase strip, bottom left (Bahrain) ---
+    d.polygon([(x0, y1), (x0, sea_y + 8), (x0 + 120, sea_y + 18),
+               (x0 + 210, sea_y + 4), (x0 + 250, y1)], fill=(96, 88, 66))
+    d.line([(x0 + 36, sea_y + 24), (x0 + 150, sea_y + 16)],
+           fill=(210, 205, 190), width=4)
+    d.line([(x0 + 180, sea_y + 10), (x0 + 180, sea_y - 14)],
+           fill=(200, 200, 200), width=3)
+    d.ellipse([x0 + 175, sea_y - 20, x0 + 185, sea_y - 10],
+              fill=(255, 60, 60))
+    # waves (start right of the Gulf label so they never cross it)
+    for wx in range(x0 + 480, x1 - 20, 90):
         d.arc([wx, sea_y + 12, wx + 70, sea_y + 34], 180, 360,
               fill=(120, 170, 220), width=4)
-    # --- radar dish, left: A-frame mast + tilted parabolic bowl ---
-    bx, by = x0 + 110, sea_y - 6          # mast base
-    d.line([(bx - 26, by), (bx, by - 84)], fill=(200, 200, 200), width=7)
-    d.line([(bx + 26, by), (bx, by - 84)], fill=(200, 200, 200), width=7)
-    d.line([(bx - 34, by), (bx + 34, by)], fill=(200, 200, 200), width=6)
-    # bowl: arc points of a tilted ellipse, drawn as a thick curve
-    pts = []
-    for i in range(41):
-        u = -1.0 + 2.0 * i / 40            # along the dish face
-        v = 0.55 * (1 - u * u)            # bowl depth
-        a = math.radians(32)
-        px = bx - 8 + (u * 62) * math.cos(a) - (v * 62) * math.sin(a)
-        py = by - 108 + (u * 62) * math.sin(a) + (v * 62) * math.cos(a)
-        pts.append((px, py))
-    d.line(pts, fill=(235, 235, 235), width=10, joint="curve")
-    d.line([pts[0], pts[-1]], fill=(235, 235, 235), width=6)
-    d.line([(bx - 8, by - 108), (bx + 22, by - 132)], fill=(235, 235, 235),
-           width=5)
-    d.ellipse([bx + 16, by - 138, bx + 28, by - 126], fill=(240, 220, 120))
-    # sweeping beam (pale yellow wedge up-right)
-    d.polygon([(bx + 22, by - 132), (bx + 170, by - 200), (bx + 150, by - 140)],
+    # sea label, map-style, in the water right of the headland
+    d.text((x0 + 265, sea_y + 14), "PERSIAN GULF", font=font(SANS_B, 24),
+           fill=(150, 190, 230))
+    # --- radar array, left: mast + tilted flat phased-array panel ---
+    bx, by = x0 + 110, sea_y + 16         # mast base, on the headland
+    d.line([(bx, by), (bx, by - 70)], fill=(200, 200, 200), width=7)
+    d.line([(bx - 26, by), (bx + 26, by)], fill=(200, 200, 200), width=6)
+    # tilted rectangular panel (parallelogram), with grid lines
+    d.polygon([(bx - 34, by - 88), (bx + 30, by - 108), (bx + 42, by - 78),
+               (bx - 22, by - 58)], fill=(225, 225, 225),
+              outline=(90, 90, 90))
+    d.line([(bx - 28, by - 73), (bx + 36, by - 93)], fill=(150, 150, 150),
+           width=2)
+    d.line([(bx - 16, by - 88), (bx - 4, by - 68)], fill=(150, 150, 150),
+           width=2)
+    # thin sweep line up-right (no big wedge: R1 beam dominated)
+    d.line([(bx + 30, by - 108), (bx + 150, by - 180)],
+           fill=(240, 220, 120), width=3)
+    d.ellipse([bx + 146, by - 184, bx + 154, by - 176],
               fill=(240, 220, 120))
-    # --- quadcopter drone, centre: body + 4 arms + spinning rotors ---
+    # --- military delta-wing drone (Shahed-style flying wing), centre ---
+    # No rotors, no nav lights: a flat dark triangle, nose right,
+    # with a rear pusher prop and a small tail fin.
     cx, cy = 500, 222
-    # arms to the four rotor hubs
-    for hx, hy in [(cx - 118, cy - 46), (cx + 118, cy - 46),
-                   (cx - 118, cy + 46), (cx + 118, cy + 46)]:
-        d.line([(cx, cy), (hx, hy)], fill=(200, 200, 200), width=9)
-        d.ellipse([hx - 52, hy - 9, hx + 52, hy + 9], fill=(170, 170, 170),
-                  outline=(230, 230, 230))
-        d.ellipse([hx - 10, hy - 10, hx + 10, hy + 10], fill=(60, 60, 60))
-    d.rounded_rectangle([cx - 62, cy - 24, cx + 62, cy + 24], radius=16,
-                        fill=(38, 38, 38), outline=(220, 220, 220), width=3)
-    d.ellipse([cx - 18, cy - 12, cx + 18, cy + 12], fill=(90, 90, 90),
+    d.polygon([(cx + 120, cy), (cx - 80, cy - 44), (cx - 62, cy),
+               (cx - 80, cy + 44)], fill=(45, 45, 45),
               outline=(220, 220, 220))
-    # red navigation lights front/back, green light on the nose
-    d.ellipse([cx - 70, cy - 7, cx - 56, cy + 7], fill=(255, 60, 60))
-    d.ellipse([cx + 56, cy - 7, cx + 70, cy + 7], fill=(60, 255, 120))
-    # interceptor streak crossing toward the drone from the right
-    d.line([(cx + 300, cy - 95), (cx + 200, cy - 40)], fill=WHITE, width=5)
-    d.ellipse([cx + 292, cy - 103, cx + 308, cy - 87], fill=(255, 80, 40))
+    d.line([(cx + 120, cy), (cx - 62, cy)], fill=(140, 140, 140), width=3)
+    d.polygon([(cx - 62, cy - 6), (cx - 40, cy - 30), (cx - 30, cy - 6)],
+              fill=(60, 60, 60), outline=(200, 200, 200))
+    d.ellipse([cx - 30, cy - 10, cx + 10, cy + 10], fill=(90, 90, 90),
+              outline=(220, 220, 220))
+    # interceptor missile climbing at the drone from below right:
+    # white body streak, orange flame at the rear (away from the drone)
+    d.line([(cx + 92, cy + 28), (cx + 162, cy + 78)], fill=WHITE, width=5)
+    d.ellipse([cx + 84, cy + 20, cx + 100, cy + 36], fill=WHITE)
+    d.ellipse([cx + 156, cy + 72, cx + 172, cy + 88], fill=(255, 110, 0))
     # --- explosion burst, right: irregular fireball, no sun-like rays ---
     ex, ey = 880, 240
     d.ellipse([ex - 58, ey - 30, ex + 30, ey + 58], fill=(220, 40, 0))
@@ -143,18 +155,14 @@ def draw_hero(d, x0, y0, x1, y1):
     for sx, sy, sr in [(ex - 46, ey - 82, 22), (ex - 8, ey - 100, 26),
                        (ex + 34, ey - 84, 20)]:
         d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=(110, 110, 110))
-    # small second drone, top right
+    # small second drone, top right: same delta-wing shape, smaller,
+    # with a short white contrail behind it
     sx, sy = 760, 165
-    d.line([(sx - 34, sy - 14), (sx + 34, sy + 14)], fill=(200, 200, 200),
-           width=5)
-    d.line([(sx - 34, sy + 14), (sx + 34, sy - 14)], fill=(200, 200, 200),
-           width=5)
-    for hx, hy in [(sx - 34, sy - 14), (sx + 34, sy - 14), (sx - 34, sy + 14),
-                   (sx + 34, sy + 14)]:
-        d.ellipse([hx - 18, hy - 4, hx + 18, hy + 4], fill=(170, 170, 170))
-    d.ellipse([sx - 12, sy - 8, sx + 12, sy + 8], fill=(38, 38, 38),
+    d.line([(sx - 78, sy + 12), (sx - 42, sy + 4)], fill=WHITE, width=3)
+    d.polygon([(sx + 42, sy), (sx - 28, sy - 16), (sx - 22, sy),
+               (sx - 28, sy + 16)], fill=(45, 45, 45),
               outline=(220, 220, 220))
-    d.ellipse([sx - 16, sy - 3, sx - 8, sy + 5], fill=(255, 60, 60))
+    d.ellipse([sx - 34, sy - 4, sx - 24, sy + 4], fill=(170, 170, 170))
     # --- warship silhouette on the sea ---
     hx, hy = 660, sea_y + 8
     d.polygon([(hx - 95, hy + 26), (hx + 105, hy + 26), (hx + 88, hy + 2),
@@ -196,81 +204,122 @@ def draw_kerch(d, x0, y0, x1, y1):
     d.rectangle([x0 + 8, deck_y - 7, mid - 48, deck_y + 7], fill=(40, 40, 40))
     d.rectangle([mid + 48, deck_y - 7, x1 - 8, deck_y + 7], fill=(40, 40, 40))
     # fallen deck fragment, tilted, just above the water + splash
-    d.polygon([(mid - 32, deck_y + 12), (mid + 28, deck_y + 22),
-               (mid + 20, deck_y + 32), (mid - 40, deck_y + 22)],
+    # (bigger than R1: the collapse must read at 300px)
+    d.polygon([(mid - 40, deck_y + 8), (mid + 36, deck_y + 20),
+               (mid + 26, deck_y + 36), (mid - 48, deck_y + 24)],
               fill=(40, 40, 40))
-    for sx in (mid - 44, mid - 8, mid + 28):
-        d.arc([sx, sea_y - 12, sx + 30, sea_y + 8], 180, 360,
+    for sx in (mid - 52, mid - 12, mid + 28):
+        d.arc([sx, sea_y - 14, sx + 36, sea_y + 10], 180, 360,
               fill=WHITE, width=5)
-    # smoke over the gap
-    d.ellipse([mid - 30, y0 + 22, mid + 2, y0 + 54], fill=(110, 110, 110))
+    # smoke plume over the gap: irregular rising puffs, dark at the
+    # base where it leaves the fallen deck (R1's single grey ball
+    # read as a moon). Clearly anchored to the wreck, not a disc.
+    for sx, sy, sr, col in [(mid - 14, deck_y - 4, 16, (70, 70, 70)),
+                            (mid + 8, deck_y - 12, 18, (90, 90, 90)),
+                            (mid - 6, deck_y - 26, 15, (110, 110, 110)),
+                            (mid + 16, deck_y - 28, 11, (130, 130, 130))]:
+        d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=col)
 
 
 def draw_trump(d, x0, y0, x1, y1):
-    """Air Force One (small, high) over the four Quad flags."""
+    """Trump bust (blond hair, navy suit, red tie) at left, Air Force
+    One small and high, and the four Quad flags redrawn correctly
+    along the bottom: US (stripes + blue canton with star dots),
+    Japan (red disc), Australia (blue ensign: Union Jack canton +
+    Southern Cross dots), India (saffron/white/green)."""
     d.rectangle([x0, y0, x1, y1], fill=(232, 238, 245))
-    cx = (x0 + x1) // 2
-    py = y0 + 24
-    # plane: short fuselage, tail fin, one thin swept wing below
-    d.ellipse([cx - 105, py - 10, cx + 105, py + 10], fill=(30, 90, 160))
-    d.polygon([(cx + 82, py - 8), (cx + 118, py - 38), (cx + 118, py - 6)],
+    # --- figure, left: navy suit, white shirt, red tie, blond hair ---
+    fx = x0 + 52
+    d.polygon([(fx - 38, y1 - 2), (fx + 38, y1 - 2), (fx + 26, y0 + 44),
+               (fx - 26, y0 + 44)], fill=(25, 45, 90))
+    d.polygon([(fx - 10, y0 + 44), (fx + 10, y0 + 44), (fx, y0 + 62)],
+              fill=(255, 255, 255))
+    d.polygon([(fx - 4, y0 + 48), (fx + 4, y0 + 48), (fx + 6, y0 + 72),
+               (fx - 6, y0 + 72)], fill=(178, 34, 34))
+    d.rectangle([fx - 8, y0 + 34, fx + 8, y0 + 46], fill=(232, 190, 150))
+    d.ellipse([fx - 15, y0 + 8, fx + 15, y0 + 38], fill=(232, 190, 150))
+    d.pieslice([fx - 15, y0 + 8, fx + 15, y0 + 38], 180, 360,
+               fill=(240, 210, 90))
+    d.polygon([(fx - 15, y0 + 22), (fx + 15, y0 + 22), (fx + 13, y0 + 12),
+               (fx - 13, y0 + 12)], fill=(240, 210, 90))
+    # --- plane: smaller, top-right ---
+    cx = x0 + 300
+    py = y0 + 22
+    d.ellipse([cx - 85, py - 9, cx + 85, py + 9], fill=(30, 90, 160))
+    d.polygon([(cx + 66, py - 7), (cx + 96, py - 32), (cx + 96, py - 5)],
               fill=(30, 90, 160))
-    d.polygon([(cx - 8, py + 6), (cx + 34, py + 6), (cx + 58, py + 20),
-               (cx + 16, py + 20)], fill=(20, 60, 120))
-    d.polygon([(cx - 40, py - 6), (cx - 8, py - 6), (cx - 22, py - 18),
-               (cx - 48, py - 18)], fill=(20, 60, 120))
-    for wx in range(cx - 84, cx + 70, 20):
-        d.ellipse([wx, py - 4, wx + 7, py + 3], fill=WHITE)
-    # four Quad flags on poles along the bottom: US, Japan, Australia, India
-    fy = y1 - 6
-    fx = x0 + 34
-    # US: red with white stripes
-    d.line([(fx, fy), (fx, fy - 34)], fill=(60, 60, 60), width=4)
-    d.rectangle([fx, fy - 34, fx + 52, fy - 14], fill=(178, 34, 34))
-    d.rectangle([fx, fy - 29, fx + 52, fy - 25], fill=WHITE)
-    d.rectangle([fx, fy - 21, fx + 52, fy - 17], fill=WHITE)
+    d.polygon([(cx - 6, py + 5), (cx + 28, py + 5), (cx + 48, py + 17),
+               (cx + 14, py + 17)], fill=(20, 60, 120))
+    d.polygon([(cx - 32, py - 5), (cx - 6, py - 5), (cx - 18, py - 15),
+               (cx - 38, py - 15)], fill=(20, 60, 120))
+    for wx in range(cx - 68, cx + 56, 18):
+        d.ellipse([wx, py - 3, wx + 6, py + 3], fill=WHITE)
+    # --- four Quad flags on poles along the bottom ---
+    fy = y1 - 4
+    # US: red field, white stripes, blue canton with star dots
+    fx = x0 + 128
+    d.line([(fx, fy), (fx, fy - 22)], fill=(60, 60, 60), width=4)
+    d.rectangle([fx, fy - 22, fx + 56, fy], fill=(178, 34, 34))
+    for wy in (fy - 19, fy - 13, fy - 6):
+        d.rectangle([fx, wy, fx + 56, wy + 3], fill=WHITE)
+    d.rectangle([fx, fy - 22, fx + 22, fy - 11], fill=(0, 40, 110))
+    for sx in (fx + 4, fx + 11, fx + 18):
+        for sy in (fy - 19, fy - 14):
+            d.ellipse([sx - 1, sy - 1, sx + 1, sy + 1], fill=WHITE)
     # Japan: white with red dot
-    fx += 100
-    d.line([(fx, fy), (fx, fy - 34)], fill=(60, 60, 60), width=4)
-    d.rectangle([fx, fy - 34, fx + 52, fy - 14], fill=WHITE,
+    fx += 88
+    d.line([(fx, fy), (fx, fy - 22)], fill=(60, 60, 60), width=4)
+    d.rectangle([fx, fy - 22, fx + 56, fy], fill=WHITE,
                 outline=(60, 60, 60))
-    d.ellipse([fx + 19, fy - 29, fx + 33, fy - 15], fill=(200, 40, 40))
-    # Australia: blue with white cross bars
-    fx += 100
-    d.line([(fx, fy), (fx, fy - 34)], fill=(60, 60, 60), width=4)
-    d.rectangle([fx, fy - 34, fx + 52, fy - 14], fill=(0, 60, 140))
-    d.rectangle([fx, fy - 26, fx + 52, fy - 22], fill=WHITE)
-    d.rectangle([fx + 24, fy - 34, fx + 28, fy - 14], fill=WHITE)
+    d.ellipse([fx + 21, fy - 17, fx + 35, fy - 5], fill=(200, 40, 40))
+    # Australia: blue ensign — Union Jack canton + Southern Cross
+    fx += 88
+    d.line([(fx, fy), (fx, fy - 22)], fill=(60, 60, 60), width=4)
+    d.rectangle([fx, fy - 22, fx + 56, fy], fill=(0, 40, 110))
+    d.line([(fx, fy - 22), (fx + 26, fy - 11)], fill=WHITE, width=2)
+    d.line([(fx + 26, fy - 22), (fx, fy - 11)], fill=WHITE, width=2)
+    d.line([(fx + 13, fy - 22), (fx + 13, fy - 11)], fill=WHITE, width=3)
+    d.line([(fx, fy - 16), (fx + 26, fy - 16)], fill=WHITE, width=3)
+    d.line([(fx + 13, fy - 22), (fx + 13, fy - 11)], fill=(200, 40, 40),
+           width=2)
+    d.line([(fx, fy - 16), (fx + 26, fy - 16)], fill=(200, 40, 40), width=2)
+    d.ellipse([fx + 30, fy - 8, fx + 36, fy - 2], fill=WHITE)
+    for sx, sy in [(fx + 45, fy - 16), (fx + 49, fy - 10), (fx + 41, fy - 6),
+                    (fx + 50, fy - 19)]:
+        d.ellipse([sx - 1, sy - 1, sx + 1, sy + 1], fill=WHITE)
     # India: saffron / white / green
-    fx += 100
-    d.line([(fx, fy), (fx, fy - 34)], fill=(60, 60, 60), width=4)
-    d.rectangle([fx, fy - 34, fx + 52, fy - 27], fill=(255, 153, 51))
-    d.rectangle([fx, fy - 27, fx + 52, fy - 20], fill=WHITE)
-    d.rectangle([fx, fy - 20, fx + 52, fy - 14], fill=(0, 130, 60))
+    fx += 88
+    d.line([(fx, fy), (fx, fy - 22)], fill=(60, 60, 60), width=4)
+    d.rectangle([fx, fy - 22, fx + 56, fy - 15], fill=(255, 153, 51))
+    d.rectangle([fx, fy - 15, fx + 56, fy - 8], fill=WHITE)
+    d.rectangle([fx, fy - 8, fx + 56, fy - 1], fill=(0, 130, 60))
 
 
 def draw_nvidia(d, x0, y0, x1, y1):
-    """Green GPU chip + steep rising arrow."""
+    """Green GPU chip + steep rising arrow. R2: chip shrunk to fit
+    its 80px icon zone (R1 pins crossed the panel top and cut the
+    headline); pins now stop 2px inside the zone, 10px clear of
+    the headline below."""
     d.rectangle([x0, y0, x1, y1], fill=(222, 243, 214))
     cx = (x0 + x1) // 2 - 90
     cy = (y0 + y1) // 2
-    # chip pins
-    for px in range(cx - 52, cx + 53, 18):
-        d.line([(px, cy - 52), (px, cy - 66)], fill=(40, 90, 20), width=4)
-        d.line([(px, cy + 52), (px, cy + 66)], fill=(40, 90, 20), width=4)
-    for py in range(cy - 40, cy + 41, 18):
-        d.line([(cx - 52, py), (cx - 66, py)], fill=(40, 90, 20), width=4)
-        d.line([(cx + 52, py), (cx + 66, py)], fill=(40, 90, 20), width=4)
-    d.rounded_rectangle([cx - 52, cy - 52, cx + 52, cy + 52], radius=10,
+    # chip pins (stop at cy +/- 38: zone half-height is 40)
+    for px in range(cx - 44, cx + 45, 16):
+        d.line([(px, cy - 30), (px, cy - 38)], fill=(40, 90, 20), width=4)
+        d.line([(px, cy + 30), (px, cy + 38)], fill=(40, 90, 20), width=4)
+    for py in range(cy - 30, cy + 31, 16):
+        d.line([(cx - 30, py), (cx - 38, py)], fill=(40, 90, 20), width=4)
+        d.line([(cx + 30, py), (cx + 38, py)], fill=(40, 90, 20), width=4)
+    d.rounded_rectangle([cx - 30, cy - 30, cx + 30, cy + 30], radius=8,
                         fill=(118, 185, 0))
-    d.rounded_rectangle([cx - 28, cy - 28, cx + 28, cy + 28], radius=6,
+    d.rounded_rectangle([cx - 16, cy - 16, cx + 16, cy + 16], radius=5,
                         fill=(30, 90, 20))
     # rising arrow, right side
-    ax0, ay1 = cx + 92, y1 - 14
-    d.line([(ax0, ay1), (ax0 + 52, ay1 - 34), (ax0 + 104, ay1 - 52),
-            (ax0 + 150, ay1 - 74)], fill=(20, 120, 20), width=9)
-    d.polygon([(ax0 + 150, ay1 - 74), (ax0 + 118, ay1 - 74),
-               (ax0 + 150, ay1 - 42)], fill=(20, 120, 20))
+    ax0, ay1 = cx + 92, y1 - 8
+    d.line([(ax0, ay1), (ax0 + 52, ay1 - 30), (ax0 + 104, ay1 - 46),
+            (ax0 + 150, ay1 - 64)], fill=(20, 120, 20), width=9)
+    d.polygon([(ax0 + 150, ay1 - 64), (ax0 + 118, ay1 - 64),
+               (ax0 + 150, ay1 - 32)], fill=(20, 120, 20))
 
 
 def draw_akvan(d, x0, y0, x1, y1):
@@ -307,9 +356,10 @@ def main():
     img = Image.new("RGB", (W, H), CREAM)
     d = ImageDraw.Draw(img)
 
-    # ---- masthead ----
-    centre(d, W // 2, 12, "THE WORLD IN ONE DAY", font(SANS_B, 32), RED)
-    centre(d, W // 2, 48, "WEDNESDAY 18 NOVEMBER 2026",
+    # ---- masthead: date only (R2: the "THE WORLD IN ONE DAY" title
+    # was dropped to pay for the two (17 NOV) date labels + the
+    # PERSIAN GULF map label inside the ~60-word budget) ----
+    centre(d, W // 2, 34, "WEDNESDAY 18 NOVEMBER 2026",
            font(SERIF_B, 50), INK)
     d.rectangle([16, 106, W - 16, 112], fill=RED)
 
@@ -320,30 +370,32 @@ def main():
     d.rectangle([hx0 + 2, hy0 + 236, hx1 - 2, hy0 + 302], fill=NAVY)
     centre(d, W // 2, hy0 + 246, "DRONES OVER BAHRAIN",
            font(SANS_B, 54), WHITE)
-    centre(d, W // 2, hy0 + 312, "Iran drones intercepted; US hits Qeshm.",
+    centre(d, W // 2, hy0 + 312, "Iran drones stopped; US hits Qeshm.",
            font(SANS_B, 30), INK)
 
     # ---- grid 2x2 ----
     panel(d, 16, 488, 502, 672, (214, 228, 240), draw_kerch,
-          "KERCH BRIDGE DOWN", "Ukraine strike; 270m falls.")
+          "KERCH DOWN (17 NOV)", "Ukraine strike; 270m falls.")
     panel(d, 522, 488, 1008, 672, (232, 238, 245), draw_trump,
           "TRUMP IN MANILA", "Meets Marcos; Xi\u2013Putin Thu.")
     panel(d, 16, 680, 502, 864, (222, 243, 214), draw_nvidia,
-          "NVIDIA: REVENUE $115.8BN", "Up 103%; Huang stays out.")
+          "NVIDIA: REVENUE $115.8BN", "Up 103%; Huang not back.")
     panel(d, 522, 680, 1008, 864, (198, 224, 245), draw_akvan,
-          "AKVAN NEARS INDIA", "204,070 evacuate; lands Fri.")
+          "AKVAN NEARS INDIA", "204,070 to evacuate; hits Fri.")
 
-    # ---- strip ALSO TODAY ----
+    # ---- strip ALSO TODAY: two full-size lines (28px) instead of
+    # one cramped line — fills the dead black space R1 left below
+    # the single line, and carries the (17 NOV) label for Dhoni ----
     sx0, sy0, sx1, sy1 = 16, 876, W - 16, 1012
     d.rounded_rectangle([sx0, sy0, sx1, sy1], radius=10, fill=(20, 20, 20))
     d.text((32, sy0 + 8), "ALSO TODAY", font=font(SANS_B, 24), fill=(255, 90, 70))
-    items = ("DHONI QUITS IPL  \u2022  GAZA: 70,000 TENTS FLOODED "
-             "(15\u201316 NOV)")
-    fnt = fit_font(SANS_B, items, 28, (sx1 - sx0) - 32, minimum=24)
-    centre(d, W // 2, sy0 + 52, items, fnt, WHITE)
     # thin red rule under the strip label, echoing the masthead
     d.rectangle([32, sy0 + 40, 32 + text_w(font(SANS_B, 24), "ALSO TODAY"),
                  sy0 + 43], fill=(255, 90, 70))
+    centre(d, W // 2, sy0 + 50, "DHONI QUITS IPL (17 NOV)",
+           font(SANS_B, 28), WHITE)
+    centre(d, W // 2, sy0 + 92, "GAZA: 70,000 TENTS FLOODED "
+           "(15\u201316 NOV)", font(SANS_B, 28), WHITE)
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     img.save(OUT, format="PNG", optimize=True)
